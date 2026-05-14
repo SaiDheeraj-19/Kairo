@@ -21,7 +21,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       Cookies.remove('kairo-token');
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        const path = window.location.pathname;
+        if (path.startsWith('/dashboard')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

@@ -1,49 +1,49 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
-  --background: 240 10% 3.9%;
+  --background: 0 0% 2%;
   --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 188 100% 50%;
+  --primary: 161 74% 65%; /* #81ecc6 */
   --primary-foreground: 240 5.9% 10%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
-  --radius: 0.75rem;
+  --border: 240 3.7% 10%;
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: #030303;
+  color: #f0f0f0;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
 }
 
-@layer components {
-  .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
-  }
-  
-  .glass-card {
-    @apply glass rounded-2xl p-6 transition-all duration-300 hover:bg-white/10 hover:border-white/20;
-  }
+@theme {
+  --color-primary: hsl(161 74% 65%);
+}
 
-  .btn-primary {
-    @apply bg-cyan-500 hover:bg-cyan-400 text-black font-semibold px-4 py-2 rounded-lg transition-all duration-200 active:scale-95;
-  }
+@utility glass {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@utility glass-card {
+  @apply glass rounded-2xl p-6 transition-all duration-300;
+}
+
+.glass-card:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+@utility btn-primary {
+  @apply bg-cyan-500 text-black font-semibold px-4 py-2 rounded-lg transition-all duration-200;
+}
+
+.btn-primary:hover {
+  @apply bg-cyan-400;
+}
+
+.btn-primary:active {
+  @apply scale-95;
 }
 
 /* Custom scrollbar */

@@ -24,7 +24,7 @@ export default function Login() {
       const { data } = await axios.post(`${API_URL}/api/auth/login`, { email, password });
       Cookies.set("kairo-token", data.token, { expires: 7 });
       toast.success("Welcome back to Kairo");
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Login failed");
     } finally {
@@ -33,11 +33,11 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden">
+    <main className="min-h-screen bg-[#030303] text-white flex items-center justify-center p-6 relative overflow-hidden">
       <Toaster position="bottom-right" toastOptions={{ style: { background: '#111', color: '#fff', border: '1px solid #333' }}} />
       
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -45,10 +45,10 @@ export default function Login() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-10">
-          <div className="inline-flex p-3 bg-cyan-500/10 rounded-2xl mb-4">
-            <Sparkles className="text-cyan-400 w-8 h-8" />
+          <div className="inline-flex p-3 bg-primary/10 rounded-2xl mb-4">
+            <Sparkles className="text-primary w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Initialize Session</h1>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">Initialize Session</h1>
           <p className="text-zinc-500 font-medium">Access your cloud workspace environment</p>
         </div>
 
@@ -59,7 +59,7 @@ export default function Login() {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               placeholder="email@example.com"
             />
           </div>
@@ -70,14 +70,14 @@ export default function Login() {
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
+              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               placeholder="••••••••"
             />
           </div>
 
           <button 
             disabled={isLoading}
-            className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+            className="w-full bg-primary hover:brightness-110 text-black font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
           >
             {isLoading ? (
               <Loader2 className="animate-spin w-5 h-5" />

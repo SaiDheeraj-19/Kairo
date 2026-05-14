@@ -6,6 +6,7 @@ import path from 'path';
 import morgan from 'morgan';
 import workspaceRoutes from './routes/workspace.routes';
 import authRoutes from './routes/auth.routes';
+import aiRoutes from './routes/ai.routes';
 import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', authMiddleware, workspaceRoutes);
+app.use('/api/ai', authMiddleware, aiRoutes);
 
 app.listen(PORT, () => {
   console.log(`
