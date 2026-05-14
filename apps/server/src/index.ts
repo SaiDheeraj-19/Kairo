@@ -1,10 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 import morgan from 'morgan';
 import workspaceRoutes from './routes/workspace.routes';
 
 dotenv.config();
+
+// Ensure storage directory exists
+const storageRoot = process.env.STORAGE_ROOT || '/tmp/kairo/workspaces';
+if (!fs.existsSync(storageRoot)) {
+  fs.mkdirSync(storageRoot, { recursive: true });
+}
 
 const app = express();
 const PORT = process.env.PORT || 4000;

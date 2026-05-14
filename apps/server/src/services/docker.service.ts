@@ -21,18 +21,23 @@ export class DockerService {
     // Assign a random port in the 8000-9000 range
     const port = Math.floor(Math.random() * 1000) + 8000;
 
+    // Define host storage path
+    const storageRoot = process.env.STORAGE_ROOT || '/tmp/kairo/workspaces';
+    const hostStoragePath = `${storageRoot}/${workspaceId}`;
+
     const container = await docker.createContainer({
       Image: image,
       name: containerName,
-      Labels: { [this.LABEL_KEY]: 'true', 'name': name },
+      Labels: { [this.LABEL_KEY]: 'true', 'name': name, 'workspaceId': workspaceId },
       ExposedPorts: { '8080/tcp': {} },
       HostConfig: {
         PortBindings: { '8080/tcp': [{ HostPort: port.toString() }] },
+        Binds: [`${hostStoragePath}:/home/coder/project`],
         Memory: 1024 * 1024 * memory,
         NanoCpus: cpu * 1e9,
       },
       Env: [
-        'PASSWORD=kairo', // In production, generate a secure token
+        'PASSWORD=kairo', 
       ],
     });
 
