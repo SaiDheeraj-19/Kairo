@@ -88,4 +88,28 @@ export class DockerService {
       port: data.NetworkSettings.Ports['8080/tcp']?.[0]?.HostPort
     };
   }
+
+  static async executeCommand(id: string, command: string) {
+    const container = docker.getContainer(id);
+    const exec = await container.exec({
+      Cmd: ['sh', '-c', command],
+      AttachStdout: true,
+      AttachStderr: true,
+    });
+
+    const stream = await exec.start({ hijack: true, stdin: true });
+    
+    return new Promise((resolve, reject) => {
+      let output = '';
+      stream.on('data', (chunk) => {
+        output += chunk.toString();
+      });
+      stream.on('end', () => {
+        resolve(output);
+      });
+      stream.on('error', (err) => {
+        reject(err);
+      });
+    });
+  }
 }

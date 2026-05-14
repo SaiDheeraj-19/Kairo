@@ -22,6 +22,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const [executingId, setExecutingId] = useState<string | null>(null);
+  const [command, setCommand] = useState("");
+  const [lastOutput, setLastOutput] = useState("");
+  const [isExecLoading, setIsExecLoading] = useState(false);
 
   const fetchWorkspaces = async () => {
     try {
@@ -71,6 +75,21 @@ export default function Dashboard() {
     }
   };
 
+  const handleExec = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!executingId || !command) return;
+    
+    setIsExecLoading(true);
+    try {
+      const { data } = await axios.post(`${API_URL}/api/workspaces/${executingId}/exec`, { command });
+      setLastOutput(data.output);
+    } catch (error) {
+      toast.error("Command failed");
+    } finally {
+      setIsExecLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#050505] text-white p-8">
       <Toaster position="bottom-right" toastOptions={{ style: { background: '#111', color: '#fff', border: '1px solid #333' }}} />
@@ -98,6 +117,24 @@ export default function Dashboard() {
 
         {/* Quick Actions / Create */}
         <section className="mb-12">
+          <div className="flex gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+            {[
+              { id: 'node', name: 'Node.js', icon: '⚡' },
+              { id: 'python', name: 'Python', icon: '🐍' },
+              { id: 'go', name: 'Go Lang', icon: '🐹' },
+              { id: 'rust', name: 'Rust', icon: '🦀' },
+            ].map(tpl => (
+              <button 
+                key={tpl.id}
+                onClick={() => setNewName(`${tpl.id}-workspace`)}
+                className="flex-shrink-0 glass-card !p-3 !px-5 flex items-center gap-3 hover:border-cyan-500/50 transition-all active:scale-95"
+              >
+                <span className="text-xl">{tpl.icon}</span>
+                <span className="text-sm font-medium text-zinc-300">{tpl.name}</span>
+              </button>
+            ))}
+          </div>
+
           <form onSubmit={handleCreate} className="glass-card flex gap-4 items-center">
             <div className="flex-1 relative">
               <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
@@ -132,12 +169,13 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
+              <AnimatePresence mode="popLayout">
                 {workspaces.map((ws) => (
                   <motion.div 
                     key={ws.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="glass-card group"
                   >
@@ -176,19 +214,32 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <a 
-                      href={ws.url} 
-                      target="_blank"
-                      className="w-full flex items-center justify-center gap-2 bg-white/5 group-hover:bg-cyan-500 group-hover:text-black py-3 rounded-xl font-semibold transition-all"
-                    >
-                      Open IDE
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <a 
+                        href={ws.url} 
+                        target="_blank"
+                        className="flex items-center justify-center gap-2 bg-white/5 group-hover:bg-cyan-500 group-hover:text-black py-3 rounded-xl font-semibold transition-all"
+                      >
+                        Open IDE
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                      <button 
+                        onClick={() => {
+                          setExecutingId(ws.id);
+                          setLastOutput("");
+                          setCommand("");
+                        }}
+                        className="flex items-center justify-center gap-2 bg-white/5 hover:bg-zinc-800 py-3 rounded-xl font-semibold transition-all"
+                      >
+                        Terminal
+                        <Terminal className="w-4 h-4" />
+                      </button>
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
 
-              {workspaces.length === 0 && (
+              {workspaces.length === 0 && !loading && (
                 <div className="col-span-full py-20 text-center glass-card border-dashed">
                   <p className="text-zinc-500 mb-4">No active workspaces. Ready to build something great?</p>
                   <button 
@@ -202,6 +253,63 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+
+        {/* Exec Modal */}
+        <AnimatePresence>
+          {executingId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setExecutingId(null)}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative glass-card w-full max-w-2xl !p-0 overflow-hidden"
+              >
+                <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+                  <h3 className="font-bold flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-cyan-400" />
+                    Cloud Terminal
+                  </h3>
+                  <button onClick={() => setExecutingId(null)} className="text-zinc-500 hover:text-white">✕</button>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-black rounded-lg p-4 mb-4 h-64 overflow-y-auto font-mono text-sm text-green-400 border border-white/5">
+                    {lastOutput ? (
+                      <pre className="whitespace-pre-wrap">{lastOutput}</pre>
+                    ) : (
+                      <p className="text-zinc-600">Enter a command to execute in the workspace...</p>
+                    )}
+                    {isExecLoading && <Loader2 className="animate-spin mt-2" />}
+                  </div>
+
+                  <form onSubmit={handleExec} className="flex gap-2">
+                    <input 
+                      autoFocus
+                      type="text" 
+                      value={command}
+                      onChange={(e) => setCommand(e.target.value)}
+                      placeholder="e.g. ls -la /home/coder/project"
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    />
+                    <button 
+                      disabled={isExecLoading || !command}
+                      className="bg-cyan-500 hover:bg-cyan-400 text-black px-6 py-2 rounded-lg font-bold disabled:opacity-50"
+                    >
+                      Run
+                    </button>
+                  </form>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </main>
   );

@@ -32,4 +32,17 @@ export class WorkspaceController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  static async execute(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { command } = req.body;
+      if (!command) return res.status(400).json({ error: 'Command is required' });
+
+      const output = await DockerService.executeCommand(id, command);
+      res.json({ output });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
