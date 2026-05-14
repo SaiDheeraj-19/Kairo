@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    build:
+      context: ./apps/server
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.env:/app/.env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - kairo-network
+
+networks:
+  kairo-network:
+    driver: bridge

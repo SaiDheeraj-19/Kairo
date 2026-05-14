@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { WorkspaceController } from '../controllers/workspace.controller';
+
+const router = Router();
+
+router.get('/', WorkspaceController.list);
+router.post('/', WorkspaceController.create);
+router.delete('/:id', WorkspaceController.delete);
+
+export default router;
