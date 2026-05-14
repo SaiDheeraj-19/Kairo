@@ -14,9 +14,14 @@ export class DockerService {
   private static readonly DEFAULT_IMAGE = 'codercom/code-server:latest';
 
   static async createWorkspace(config: WorkspaceConfig) {
-    const { name, image = this.DEFAULT_IMAGE, cpu = 0.5, memory = 512 } = config;
+    const { name, image: requestedImage, cpu = 0.5, memory = 512 } = config;
     const workspaceId = Math.random().toString(36).substring(7);
     const containerName = `kairo-ws-${name}-${workspaceId}`;
+    
+    // Determine image and port based on name prefix or explicit config
+    const isDesktop = name.includes('linux') || requestedImage?.includes('kasm');
+    const image = requestedImage || (isDesktop ? 'kasmweb/core-ubuntu-focal:1.15.0' : this.DEFAULT_IMAGE);
+    const internalPort = isDesktop ? '6901/tcp' : '8080/tcp';
     
     // Assign a random port in the 8000-9000 range
     const port = Math.floor(Math.random() * 1000) + 8000;
@@ -29,15 +34,16 @@ export class DockerService {
       Image: image,
       name: containerName,
       Labels: { [this.LABEL_KEY]: 'true', 'name': name, 'workspaceId': workspaceId },
-      ExposedPorts: { '8080/tcp': {} },
+      ExposedPorts: { [internalPort]: {} },
       HostConfig: {
-        PortBindings: { '8080/tcp': [{ HostPort: port.toString() }] },
+        PortBindings: { [internalPort]: [{ HostPort: port.toString() }] },
         Binds: [`${hostStoragePath}:/home/coder/project`],
         Memory: 1024 * 1024 * memory,
         NanoCpus: cpu * 1e9,
       },
       Env: [
         'PASSWORD=kairo', 
+        'VNC_PW=kairo',
       ],
     });
 

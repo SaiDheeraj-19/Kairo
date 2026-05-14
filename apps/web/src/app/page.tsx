@@ -121,7 +121,7 @@ export default function Dashboard() {
             {[
               { id: 'node', name: 'Node.js', icon: '⚡' },
               { id: 'python', name: 'Python', icon: '🐍' },
-              { id: 'go', name: 'Go Lang', icon: '🐹' },
+              { id: 'linux', name: 'Ubuntu Desktop', icon: '🖥️' },
               { id: 'rust', name: 'Rust', icon: '🦀' },
             ].map(tpl => (
               <button 
