@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Terminal, Cpu, HardDrive, Play, Square, ExternalLink, Trash2, Loader2, Sparkles } from "lucide-react";
-import axios from "axios";
+import { api } from "@/lib/api";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
@@ -26,20 +28,25 @@ export default function Dashboard() {
   const [command, setCommand] = useState("");
   const [lastOutput, setLastOutput] = useState("");
   const [isExecLoading, setIsExecLoading] = useState(false);
+  const router = useRouter();
 
   const fetchWorkspaces = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/api/workspaces`);
+      const { data } = await api.get(`/api/workspaces`);
       setWorkspaces(data);
     } catch (error) {
       console.error("Failed to fetch workspaces", error);
-      toast.error("Failed to connect to orchestrator");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    const token = Cookies.get("kairo-token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     fetchWorkspaces();
     const interval = setInterval(fetchWorkspaces, 5000);
     return () => clearInterval(interval);
@@ -53,7 +60,7 @@ export default function Dashboard() {
     const toastId = toast.loading("Launching workspace...");
     
     try {
-      await axios.post(`${API_URL}/api/workspaces`, { name: newName });
+      await api.post(`/api/workspaces`, { name: newName });
       toast.success("Workspace ready!", { id: toastId });
       setNewName("");
       fetchWorkspaces();
@@ -67,7 +74,7 @@ export default function Dashboard() {
   const handleDelete = async (id: string) => {
     const toastId = toast.loading("Stopping workspace...");
     try {
-      await axios.delete(`${API_URL}/api/workspaces/${id}`);
+      await api.delete(`/api/workspaces/${id}`);
       toast.success("Workspace stopped", { id: toastId });
       fetchWorkspaces();
     } catch (error) {
@@ -81,7 +88,7 @@ export default function Dashboard() {
     
     setIsExecLoading(true);
     try {
-      const { data } = await axios.post(`${API_URL}/api/workspaces/${executingId}/exec`, { command });
+      const { data } = await api.post(`/api/workspaces/${executingId}/exec`, { command });
       setLastOutput(data.output);
     } catch (error) {
       toast.error("Command failed");
